@@ -1,0 +1,463 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Rocket Galleries\n"
+"POT-Creation-Date: 2014-05-01 17:38-0000\n"
+"PO-Revision-Date: 2014-05-01 17:38-0000\n"
+"Last-Translator: \n"
+"Language-Team: Matthew Ruddy <support@rocketgalleries.com>\n"
+"Language: en_GB\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.6.4\n"
+"X-Poedit-Basepath: ../\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-KeywordsList: __;_e;_ex;_n;_nx\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: admin/edit-gallery.php:5
+#, php-format
+msgid "%s Gallery: "
+msgstr ""
+
+#: admin/edit-gallery.php:5 admin/list-galleries.php:140
+msgid "Edit"
+msgstr ""
+
+#: admin/edit-gallery.php:5
+msgid "Add"
+msgstr ""
+
+#: admin/edit-gallery.php:6
+msgid "Enter a gallery name"
+msgstr ""
+
+#: admin/edit-gallery.php:32
+msgid "Manage Images"
+msgstr ""
+
+#: admin/edit-gallery.php:37
+msgid "Add Images"
+msgstr ""
+
+#: admin/edit-gallery.php:38
+msgid "Delete Images"
+msgstr ""
+
+#: admin/edit-gallery.php:50
+msgid "Randomize the image order."
+msgstr ""
+
+#: admin/edit-gallery.php:68
+msgid "Save Gallery"
+msgstr ""
+
+#: admin/edit-settings.php:3 rocketgalleries.php:602
+msgid "Edit Settings"
+msgstr ""
+
+#: admin/edit-settings.php:21
+msgid "General Settings"
+msgstr ""
+
+#: admin/edit-settings.php:26
+msgid "Scripts & Styling"
+msgstr ""
+
+#: admin/edit-settings.php:31
+msgid "Compatibility"
+msgstr ""
+
+#: admin/edit-settings.php:35
+msgid "Optimized"
+msgstr ""
+
+#: admin/edit-settings.php:37
+msgid ""
+"This option controls where the plugin's scripts and styling are loaded. "
+"\"Compatibility\" will load them in the page header, which is less "
+"performant but also less likely to suffer conflicts with other plugins. "
+"\"Optimized\" conditionally loads CSS and JS in the page footer, which is "
+"better for performance, but more likely to encounter errors. We recommend "
+"trying \"Optimized\" and reverting back if you encounter any issues."
+msgstr ""
+
+#: admin/edit-settings.php:45 admin/edit-settings.php:53
+msgid "Reset Plugin"
+msgstr ""
+
+#: admin/edit-settings.php:50
+msgid "Plugin Settings"
+msgstr ""
+
+#: admin/edit-settings.php:54
+msgid ""
+"Click this button to reset the plugin to its default settings. This cannot "
+"be reversed, so be sure before you do this!"
+msgstr ""
+
+#: admin/edit-settings.php:62
+msgid "Installation Settings"
+msgstr ""
+
+#: admin/edit-settings.php:66
+msgid "PHP Version"
+msgstr ""
+
+#: admin/edit-settings.php:71
+msgid "MySQL Version"
+msgstr ""
+
+#: admin/edit-settings.php:76
+msgid "WordPress Version"
+msgstr ""
+
+#: admin/edit-settings.php:81
+msgid "Plugin Version"
+msgstr ""
+
+#: admin/edit-settings.php:97
+msgid "Save Settings"
+msgstr ""
+
+#: admin/list-galleries.php:11
+msgid "Galleries "
+msgstr ""
+
+#: admin/list-galleries.php:13 rocketgalleries.php:595
+msgid "Add New"
+msgstr ""
+
+#: admin/list-galleries.php:16
+#, php-format
+msgid "Search results for &#8220;%s&#8221;"
+msgstr ""
+
+#: admin/list-galleries.php:32
+msgid "Search Galleries:"
+msgstr ""
+
+#: admin/list-galleries.php:34
+msgid "Search Galleries"
+msgstr ""
+
+#: admin/list-galleries.php:51 admin/list-galleries.php:161
+msgid "Bulk Actions"
+msgstr ""
+
+#: admin/list-galleries.php:52 admin/list-galleries.php:141
+#: admin/list-galleries.php:162
+msgid "Duplicate"
+msgstr ""
+
+#: admin/list-galleries.php:53 admin/list-galleries.php:142
+#: admin/list-galleries.php:163
+msgid "Delete"
+msgstr ""
+
+#: admin/list-galleries.php:59 admin/list-galleries.php:169
+msgid "1 gallery"
+msgstr ""
+
+#: admin/list-galleries.php:61 admin/list-galleries.php:171
+msgid "Go to the first page"
+msgstr ""
+
+#: admin/list-galleries.php:62 admin/list-galleries.php:172
+msgid "Go to the previous page"
+msgstr ""
+
+#: admin/list-galleries.php:64 admin/list-galleries.php:174
+msgid "Current page"
+msgstr ""
+
+#: admin/list-galleries.php:66 admin/list-galleries.php:176
+msgid "Go to the next page"
+msgstr ""
+
+#: admin/list-galleries.php:67 admin/list-galleries.php:177
+msgid "Go to the last page"
+msgstr ""
+
+#: admin/list-galleries.php:80
+msgid "Select All"
+msgstr ""
+
+#: admin/list-galleries.php:84
+msgid "ID"
+msgstr ""
+
+#: admin/list-galleries.php:89
+msgid "Title"
+msgstr ""
+
+#: admin/list-galleries.php:94
+msgid "Author"
+msgstr ""
+
+#: admin/list-galleries.php:106
+msgid "No galleries found."
+msgstr ""
+
+#: admin/list-galleries.php:115
+msgid "Select "
+msgstr ""
+
+#: admin/list-galleries.php:127
+#, php-format
+msgid "Edit &#8220;%s&#8221;"
+msgstr ""
+
+#: admin/list-galleries.php:140
+msgid "Edit this gallery"
+msgstr ""
+
+#: admin/list-galleries.php:141
+msgid "Duplicate this gallery"
+msgstr ""
+
+#: admin/list-galleries.php:142
+msgid "Delete this gallery"
+msgstr ""
+
+#: admin/list-galleries.php:165
+msgid "Apply"
+msgstr ""
+
+#: admin/welcome-panel.php:23
+msgid "Dismiss"
+msgstr ""
+
+#: admin/welcome-panel.php:25
+msgid "Welcome to Rocket Galleries"
+msgstr ""
+
+#: admin/welcome-panel.php:28
+msgid ""
+"Thanks for installing Rocket Galleries. Here are some links to help get you "
+"started."
+msgstr ""
+
+#: admin/welcome-panel.php:33
+msgid "Get Started"
+msgstr ""
+
+#: admin/welcome-panel.php:34
+msgid "View the Documentation"
+msgstr ""
+
+#: admin/welcome-panel.php:38
+msgid "Need some help?"
+msgstr ""
+
+#: admin/welcome-panel.php:43
+msgid "Displaying a Gallery"
+msgstr ""
+
+#: admin/welcome-panel.php:49
+msgid "Frequently Asked Questions"
+msgstr ""
+
+#: admin/welcome-panel.php:55
+msgid "Help & Support"
+msgstr ""
+
+#: backbone/gallery-media-sidebar.php:8
+msgid "Image Details"
+msgstr ""
+
+#: backbone/gallery-media-sidebar.php:35
+msgid "Edit Image"
+msgstr ""
+
+#: backbone/gallery-media-sidebar.php:36
+msgid "Refresh"
+msgstr ""
+
+#: backbone/gallery-media-sidebar.php:41
+msgid "Delete Permanently"
+msgstr ""
+
+#: includes/Database.php:248
+msgid "New Gallery"
+msgstr ""
+
+#: includes/Database.php:433
+msgid " Copy"
+msgstr ""
+
+#: includes/Resize.php:59
+msgid "No image URL has been entered."
+msgstr ""
+
+#: rocketgalleries.php:571 rocketgalleries.php:572 rocketgalleries.php:586
+msgid "Galleries"
+msgstr ""
+
+#: rocketgalleries.php:587
+msgid "All Galleries"
+msgstr ""
+
+#: rocketgalleries.php:594
+msgid "Add New Gallery"
+msgstr ""
+
+#: rocketgalleries.php:603
+msgid "Settings"
+msgstr ""
+
+#: rocketgalleries.php:662
+msgid "Add a Gallery"
+msgstr ""
+
+#: rocketgalleries.php:662
+msgid " Add Gallery"
+msgstr ""
+
+#: rocketgalleries.php:698
+msgid "Please select a gallery"
+msgstr ""
+
+#: rocketgalleries.php:710
+msgid "Add a gallery"
+msgstr ""
+
+#: rocketgalleries.php:711
+msgid "Select a gallery to insert from the box below."
+msgstr ""
+
+#: rocketgalleries.php:716
+msgid "Select a gallery"
+msgstr ""
+
+#: rocketgalleries.php:726
+msgid "Insert Gallery"
+msgstr ""
+
+#: rocketgalleries.php:727
+msgid "Close"
+msgstr ""
+
+#: rocketgalleries.php:744
+msgid "Gallery"
+msgstr ""
+
+#: rocketgalleries.php:857
+msgid "Galleries have been <strong>duplicated</strong> successfully."
+msgstr ""
+
+#: rocketgalleries.php:861
+msgid ""
+"Failed to duplicate galleries. An error has occurred. Please try again or "
+"contact support."
+msgstr ""
+
+#: rocketgalleries.php:865
+msgid "Galleries have been <strong>deleted</strong> successfully."
+msgstr ""
+
+#: rocketgalleries.php:869
+msgid ""
+"Failed to delete galleries. An error has occurred. Please try again or "
+"contact support."
+msgstr ""
+
+#: rocketgalleries.php:874
+msgid "Gallery has been <strong>duplicated</strong> successfully."
+msgstr ""
+
+#: rocketgalleries.php:878
+msgid ""
+"Failed to duplicate gallery. An error has occurred. Please try again or "
+"contact support."
+msgstr ""
+
+#: rocketgalleries.php:882
+msgid "Gallery has been <strong>deleted</strong> successfully."
+msgstr ""
+
+#: rocketgalleries.php:886
+msgid ""
+"Failed to delete slideshow. An error has occurred. Please try again or "
+"contact support."
+msgstr ""
+
+#: rocketgalleries.php:987 rocketgalleries.php:1170
+msgid "Security check has failed. Save has been prevented. Please try again."
+msgstr ""
+
+#: rocketgalleries.php:996
+msgid ""
+"Failed to save gallery. An error has occurred. Please try again or contact "
+"support."
+msgstr ""
+
+#: rocketgalleries.php:999
+msgid "Gallery has been <strong>saved</strong> successfully."
+msgstr ""
+
+#: rocketgalleries.php:1038
+msgid ""
+"Security check has failed. Bulk action has been prevented. Please try again."
+msgstr ""
+
+#: rocketgalleries.php:1094
+msgid ""
+"Security check has failed. Duplicate has been prevented. Please try again."
+msgstr ""
+
+#: rocketgalleries.php:1116
+msgid "Security check has failed. Delete has been prevented. Please try again."
+msgstr ""
+
+#: rocketgalleries.php:1152
+msgid "Security check has failed. Reset has been prevented. Please try again."
+msgstr ""
+
+#: rocketgalleries.php:1161
+msgid "Plugin has been reset successfully."
+msgstr ""
+
+#: rocketgalleries.php:1181
+msgid "Settings have been <strong>saved</strong> successfully."
+msgstr ""
+
+#: rocketgalleries.php:1205
+msgid ""
+"Looks like you've forgotten to add a gallery ID to this shortcode. Oh dear!"
+msgstr ""
+
+#: rocketgalleries.php:1213
+#, php-format
+msgid "The gallery specified (ID #%d) does not appear to exist."
+msgstr ""
+
+#: rocketgalleries.php:1345
+msgid "Are you sure you wish to do this? This cannot be reversed."
+msgstr ""
+
+#: rocketgalleries.php:1346
+msgid "Are you sure you wish to delete this image? This cannot be reversed."
+msgstr ""
+
+#: rocketgalleries.php:1347
+msgid ""
+"Are you sure you wish to delete all of this galleries images? This cannot be "
+"reversed."
+msgstr ""
+
+#: rocketgalleries.php:1349
+msgid "Add Images to Gallery"
+msgstr ""
+
+#: rocketgalleries.php:1350
+msgid "Insert into gallery"
+msgstr ""
+
+#: rocketgalleries.php:1351
+msgid "Use this image"
+msgstr ""
+
+#: rocketgalleries.php:1352
+msgid "Are you sure you wish to discard changes?"
+msgstr ""

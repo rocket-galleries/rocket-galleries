@@ -1,0 +1,364 @@
+/** ===== Floats & clearfix ===== */
+.pull-left {
+    float: left;
+}
+.pull-right {
+    float: right;
+}
+.clearfix {
+    *zoom: 1;
+}
+.clearfix::before, .clearfix::after {
+    display: table;
+    content: '';
+    line-height: 0;
+}
+.clearfix::after {
+    clear: both;
+}
+
+/** ===== Spinner ===== */
+.spinner {
+    float: left;
+    display: block;
+}
+
+/** ===== Welcome Panel ===== */
+.welcome-panel ul li a {
+    padding: 0 0 8px 0;
+    display: block;
+}
+.welcome-panel ul li a .dashicons {
+    color: #888;
+    font-size: 20px;
+    padding: 0 10px 0 0;
+}
+
+/** ===== List ===== */
+.column-id {
+    width: 3.6em;
+}
+
+/** ===== Media Buttons ===== */
+.wp-media-buttons .button {
+    padding-left: .4em;
+    margin-right: 5px;
+}
+.wp-media-buttons .button:last-child {
+    margin-right: 0;
+}
+.wp-media-buttons span.dashicons {
+    color: #888;
+}
+.wp-media-buttons span.dashicons-plus {
+    margin: 4px 0 0 0;
+}
+.wp-media-buttons span.dashicons-trash {
+    margin: 2px 0 0 0;
+}
+
+/** ===== Radio Buttons ===== */
+.radio-buttons label > input {
+    margin-top: 0;
+    margin-right: 4px;
+}
+.radio-buttons label > span {
+    margin-right: 20px;
+}
+
+/** ===== Multiple Checkboxes ===== */
+.multiple-checkbox {
+    overflow-x: hidden;
+    overflow-y: auto;
+    border: 1px solid #dfdfdf;
+    background-color: #fff;
+    width: 25%;
+    height: 120px;
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+}
+.multiple-checkbox ul {
+    list-style-type: none;
+    width: auto;
+    line-height: 1.2;
+    margin: 0;
+    padding: 0;
+}
+.multiple-checkbox ul li {
+    margin: 0;
+    padding: 2px 2px 0 0;
+    line-height: 1.2;
+}
+.multiple-checkbox ul li.odd {
+    background-color: #f9f9f9;
+}
+.multiple-checkbox ul li input {
+    margin: 0 5px;
+}
+
+/** ===== Input helpers ===== */
+input.error,
+textarea.error {
+    border-color: #b94a48 !important;
+    -webkit-box-shadow: 1px 1px 2px rgba(213, 147, 146, 0.3) !important;
+    box-shadow: 1px 1px 2px rgba(213, 147, 146, 0.3) !important;
+}
+
+input.success,
+textarea.success {
+    border-color: #468847 !important;
+    -webkit-box-shadow: 1px 1px 2px rgba(122, 186, 123, 0.3) !important;
+    box-shadow: 1px 1px 2px rgba(122, 186, 123, 0.3) !important;
+}
+
+/** ===== Wrap ===== */
+.wrap h2 input[type="text"] {
+    font-size: 1em;
+}
+
+/** ===== Main Admin panel ===== */
+.main-panel {
+    position: relative;
+}
+.main-panel .description {
+    font-size: 11px;
+    font-style: italic;
+    display: block;
+    color: #777;
+    padding: 5px 0px;
+}
+.main-panel .widgets-holder-wrap {
+    margin-bottom: 9px;
+}
+
+/** ===== Divider ===== */
+.divider {
+    padding: 0;
+    margin: 20px 0;
+    width: 100%;
+    height: 1px;
+    background: #e6e6e6;
+}
+
+/** ===== Settings Container ===== */
+.settings-container {
+    float: right;
+    clear: right;
+    width: 285px;
+    padding-right: 5px;
+}
+.settings-container .widgets-holder-wrap {
+    margin-top: 0;
+}
+.settings-container .sidebar-name {
+    border-bottom: 1px solid #eee;
+}
+.settings-container .sidebar-name h3 {
+    padding: 15px;
+}
+.settings-container .sidebar-name-arrow:before {
+    top: 4px !important;
+}
+.settings-container.closed .sidebar-name {
+    border-width: 0;
+}
+.settings-container .sidebar-content {
+    border-width: 0 1px 1px;
+    border-style: none solid solid;
+    border-color: #fff;
+    -webkit-border-bottom-right-radius: 3px;
+    -webkit-border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    padding: 10px 15px;
+    min-height: 20px;
+}
+.settings-container .sidebar-content .divider {
+    margin-bottom: 0;
+}
+.settings-container .sidebar-content .field,
+.settings-container .sidebar-content .radio {
+    width: 100%;
+    margin: 1em 0;
+}
+.settings-container .sidebar-content .field span {
+    font-weight: bold;
+    display: block;
+}
+.settings-container .sidebar-content .field {
+    float: left;
+}
+.settings-container .sidebar-content .field select,
+.settings-container .sidebar-content .field input[type="text"] {
+    width: 90%;
+}
+.settings-container .sidebar-content .field input[type="checkbox"] {
+    margin-right: 4px;
+}
+.settings-container .sidebar-content .radio > span {
+    font-weight: bold;
+    float: left;
+}
+.settings-container .sidebar-content .radio .buttons {
+    float: right;
+}
+.settings-container .sidebar-content .radio .buttons label {
+    margin-right: 10px;
+}
+.settings-container .sidebar-content .radio .buttons input {
+    margin-top: 0;
+    margin-right: 2px;
+}
+.settings-container .dimension-settings .field {
+    width: 45%;
+}
+.settings-container .dimension-settings .field:first-child {
+    margin-right: 5%;
+}
+
+/** ===== Thumbnails ===== */
+.thumbnails-container {
+    float: left;
+    clear: left;
+    width: 100%;
+    margin: 15px -300px 0 0;
+}
+.thumbnails-container .inner {
+    margin-right: 300px;
+}
+.thumbnails-container .thumbnail {
+    float: left;
+    position: relative;
+}
+.thumbnails-container .thumbnail .delete-button {
+    position: absolute;
+    top: -15px;
+    right: 5px;
+    width: 36px;
+    height: 36px;
+    z-index: 10;
+    background: url(../images/delete_icon.png) no-repeat top left;
+    cursor: pointer;
+    opacity: 0;
+    -webkit-transition: opacity 0.125s ease;
+    -moz-transition: opacity 0.125s ease;
+    -ms-transition: opacity 0.125s ease;
+    -o-transition: opacity 0.125s ease;
+    transition: opacity 0.125s ease;
+}
+.thumbnails-container .thumbnail:hover .delete-button {
+    opacity: 1;
+}
+.thumbnails-container .thumbnail img {
+    -moz-box-shadow: 0px 1px 4px 0px #a5a5a5;
+    -webkit-box-shadow: 0px 1px 4px 0px #a5a5a5;
+    box-shadow: 0px 1px 4px 0px #a5a5a5;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
+    cursor: pointer;
+    width: 150px;
+    height: 150px;
+    padding: 0;
+    margin: 0 20px 20px 0;
+}
+
+/** ===== Media Frame ===== */
+.media-frame-title,
+.media-frame-router,
+.media-frame-content,
+.media-frame-toolbar {
+    left: 0 !important;
+}
+.media-frame-content {
+    padding: 0 16px;
+}
+.media-main {
+    margin-right: 283px;
+}
+.media-main h2 {
+    font-weight: 200;
+}
+.media-main input,
+.media-main textarea {
+    max-width: 500px !important;
+}
+.media-main textarea {
+    height: 200px;
+    resize: none;
+}
+.media-main .embed-link-settings {
+    top: 0;
+}
+.media-main .setting {
+    margin-top: 30px !important;
+}
+.media-main .setting:first-child {
+    margin-top: 0 !important;
+}
+.media-main .description {
+    font-size: 11px;
+    margin-top: 5px;
+}
+.media-main .thumbnail {
+    position: relative;
+}
+.media-main .thumbnail .change-image {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 9999;
+}
+
+/** ===== Search Box ===== */
+p.search-box {
+    margin-bottom: 6px;
+}
+
+/** ===== Conditional ===== */
+.rocketgalleries-theme-has-template .hide-if-has-template {
+    display: none;
+}
+
+/** ===== Media Queries ===== */
+@media screen and (max-width: 782px) {
+
+    /** ===== Wrap ===== */
+    .wrap h2 input[type="text"] {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    /** ===== Settings Container ===== */
+    .settings-container {
+        float: none;
+        clear: both;
+        width: auto;
+        padding-right: 0;
+    }
+
+    /** ===== Thumbnails ===== */
+    .thumbnails-container .inner {
+        margin-right: 0;
+    }
+
+    /** ===== Media Frame ===== */
+    .media-frame.hide-menu .media-frame-menu {
+        left: 0 !important;
+    }
+
+    /** ===== Search Box ===== */
+    p.search-box {
+        float: none;
+        position: absolute;
+        bottom: -33px;
+        width: 98%;
+        height: 90px;
+        margin-bottom: 20px;
+    }
+
+    /** ===== Pagination ===== */
+    .tablenav-pages {
+        margin-top: 10px;
+    }
+
+}

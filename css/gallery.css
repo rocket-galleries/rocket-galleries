@@ -1,0 +1,33 @@
+/**
+ *  Rocket Galleries.
+ *  
+ *  Here you will find our gallery CSS. Advised you don't make changes to this.
+ *  Instead, add styling changing to your theme's style.css file.
+ *
+ *  Why do we use a lot of '!important' declarations here?
+ *  Because we need to ensure the theme or another plugin don't destroy the plugin's appearance.
+ *
+ *  If you want to roll your own HTML and CSS, we recommend creating your own theme gallery template which will override the plugins'.
+ *  We've included a template loader in the plugin for this purpose. See the documentation for more information.
+ */
+
+.rocketgalleries {
+	padding: 0 !important;
+	margin: 0 0 20px 0 !important;
+}
+
+.rocketgalleries-item {
+	float: left !important;
+	margin: 0 4px 4px 0; !important;
+}
+
+.rocketgalleries-link {
+	text-decoration: none !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	display: block !important;
+}
+
+.rocketgalleries-image {
+	width: 100% !important;
+}

@@ -6,7 +6,6 @@
 ?>
 
 <div class="wrap">
-    <div id="icon-edit" class="icon32 icon32-posts-post"><br></div>
     <h2>
         <?php _e( 'Galleries ', 'rocketgalleries' ); ?>
         <a href="admin.php?page=rocketgalleries_add_gallery" class="add-new-h2">
@@ -25,6 +24,13 @@
             require 'welcome-panel.php';
         ?>
     </form>
+
+    <?php
+        /**
+         * Before actions
+         */
+        do_action( 'rocketgalleries_list_galleries_before', $galleries, $page );
+    ?>
 
     <form id="posts-filter" action="" method="get">
         <input type="hidden" name="page" id="page" value="<?php echo $page; ?>" />
@@ -181,4 +187,11 @@
             <br class="clear">
         </div>
     </form>
+
+    <?php
+        /**
+         * After actions
+         */
+        do_action( 'rocketgalleries_list_galleries_after', $galleries, $page );
+    ?>
 </div>

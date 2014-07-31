@@ -27,6 +27,7 @@ class RG_Database {
      * @var array
      */
     private static $db_columns = array(
+        'id'      => 'bigint(20) unsigned NOT NULL AUTO_INCREMENT',
         'name'    => 'varchar(200) NOT NULL',
         'author'  => 'varchar(100) NOT NULL',
         'images'  => 'longtext NOT NULL',
@@ -45,6 +46,21 @@ class RG_Database {
         }
 
         return self::$instance;
+
+    }
+
+    /**
+     * Constructor
+     *
+     * @return void
+     */
+    private function __construct() {
+
+        // Actions & Filters
+        add_filter( 'rocketgalleries_query_row', array( $this, 'decode_json' ) );
+        add_filter( 'rocketgalleries_add_row', array( $this, 'encode_json' ) );
+        add_filter( 'rocketgalleries_update_row', array( $this, 'encode_json' ) );
+        add_filter( 'rocketgalleries_pre_gallery', array( $this, 'merge_defaults' ) );
 
     }
 
@@ -73,116 +89,6 @@ class RG_Database {
     }
 
     /**
-     * Returns true of false based on whether a string is JSON encoded
-     * 
-     * @param  string  $string The string to check
-     * @return boolean
-     */
-    private function is_json( $string ) {
-
-        // Decode the string
-        $data = @json_decode( $string );
-
-        // Return true or false based on if we have encountered any JSON errors
-        return ( ! is_null( $data ) ) ? true : false;
-
-    }
-
-    /**
-     * Decodes the row JSON values
-     *
-     * @param object $row The row object
-     * @return object
-     */
-    private function decode_json( $row ) {
-
-        // Loop through each row value and decode any JSON strings
-        foreach ( $row as $key => $value ) {
-
-            // Check if the value is JSON encoded. If so, decode it.
-            if ( $this->is_json( $value ) ) {
-                $row->$key = json_decode( $value );
-            }
-
-        }
-
-        return $row;
-
-    }
-
-    /**
-     * Rounds the provided number up using ceil function, but ensures that the minimum possible value is 1.
-     * Used for calculating pagination numbers, where we can't have 0 pages.
-     *
-     * @param  int $int The number to round
-     * @return int
-     */
-    private function round_up( $int ) {
-
-        // Round the number up
-        $round_up = ceil( $int );
-
-        // Return one if the value rounded was 0
-        if ( $round_up == 0 ) {
-            return 1;
-        }
-
-        return $round_up;
-
-    }
-
-    /**
-     * Returns the query we use for listing all of the database table rows
-     *
-     * @param boolean $paginate    Toggles pagination
-     * @param int     $paginate_by How many results to paginate by
-     */
-    private function query_rows( $paginate = false, $paginate_by = 20 ) {
-
-        global $wpdb;
-
-        $table_name = $this->get_table_name();
-        $table_columns = $this->get_table_columns();
-
-        // Fallbacks for "Order By" and "Order" attributes
-        $orderby = 'id';
-        $order = 'asc';
-
-        // If the "Order By" value has been specified, let's set it (if appropriate).
-        if ( isset( $_GET['orderby'] ) && is_admin() && array_key_exists( $_GET['orderby'], $table_columns ) ) {
-            $orderby = $_GET['orderby'];
-        }
-
-        // Do the same for the "Order" attribute
-        if ( isset( $_GET['order'] ) && is_admin() ) {
-            $order = $_GET['order'];
-        }
-
-        // Construct the database query
-        $start = "SELECT * FROM $table_name ";
-        $middle = ( isset( $_GET['s'] ) ) ? $wpdb->prepare( "WHERE INSTR(name, %s) > 0 ", $_GET['s'] ): " ";
-        $end = "ORDER BY $orderby $order";
-
-        // If pagination has been specified, add it to query
-        if ( $paginate ) {
-
-            // Calculate the pagination offset based on the current page
-            $offset = ( isset( $_GET['paged'] ) ) ? ( $paginate_by * ( $_GET['paged'] - 1 ) ) : 0;
-
-            // Add the pagination query
-            $end .= " LIMIT {$paginate_by} OFFSET {$offset}";
-
-        }
-
-        // Execute the query & return the results, with some additional info.
-        return (object) array(
-            'rows'      => $wpdb->get_results( $start . $middle . $end ),
-            'max_pages' => $this->round_up( $wpdb->get_var( "SELECT COUNT(*) FROM $table_name" ) / $paginate_by )
-        );
-
-    }
-
-    /**
      * Creates the plugin's database table
      *
      * @return void
@@ -203,11 +109,11 @@ class RG_Database {
         $table_name = $this->get_table_name();
 
         // Start building the database query
-        $query = "CREATE TABLE IF NOT EXISTS $table_name ( id bigint(20) unsigned NOT NULL AUTO_INCREMENT,";
+        $query = "CREATE TABLE IF NOT EXISTS $table_name (";
 
         // Add the columns to the query
         foreach ( $this->get_table_columns() as $name => $type ) {
-            $query .= "{$name} {$type} NOT NULL,";
+            $query .= "`{$name}` {$type} NOT NULL,";
         }
 
         // Finish the query
@@ -228,8 +134,239 @@ class RG_Database {
         
         global $wpdb;
 
-        $table_name = self::get_table_name();
+        $table_name = $this->get_table_name();
         $wpdb->query( "DROP TABLE $table_name" );
+
+    }
+
+    /**
+     * Returns true of false based on whether a string is JSON encoded
+     * 
+     * @param  string  $string The string to check
+     * @return boolean
+     */
+    public function is_json( $string ) {
+
+        // Decode the string
+        $data = @json_decode( $string );
+
+        // Return true or false based on if we have encountered any JSON errors
+        return ( ! is_null( $data ) ) ? true : false;
+
+    }
+
+    /**
+     * Encodes arrays and objects as JSON
+     *
+     * @param  array|object $data The data object
+     * @return array|object
+     */
+    public function encode_json( $data ) {
+
+        // Object flag
+        $is_object = is_object( $data );
+
+        // Ensure data is an array for the purposes of encoding
+        $data = (array) $data;
+
+        // Loop through each value
+        foreach ( $data as $key => $value ) {
+
+            // Check if the value is JSON encoded & is an array/object. If not, encode it.
+            if ( ! $this->is_json( $value ) && ( is_array( $value ) OR is_object( $value ) ) ) {
+                $data[ $key ] = json_encode( $value );
+            }
+
+        }
+
+        return ( $is_object ) ? (object) $data : (array) $data;
+
+    }
+
+    /**
+     * Decodes the JSON values provided
+     *
+     * @param  object $data The data object
+     * @return object
+     */
+    public function decode_json( $data ) {
+
+        // Object flag
+        $is_object = is_object( $data );
+
+        // Ensure data is an array for the purposes of encoding
+        $data = (array) $data;
+
+        // Loop through each value and decode any JSON strings
+        foreach ( $data as $key => $value ) {
+
+            // Check if the value is JSON encoded. If so, decode it.
+            if ( $this->is_json( $value ) ) {
+                $data[ $key ] = json_decode( $value );
+            }
+
+        }
+
+        return ( $is_object ) ? (object) $data : (array) $data;
+
+    }
+
+    /**
+     * Rounds the provided number up using ceil function, but ensures that the minimum possible value is 1.
+     * Used for calculating pagination numbers, where we can't have 0 pages.
+     *
+     * @param  int $int The number to round
+     * @return int
+     */
+    public function round_up( $int ) {
+
+        // Round the number up
+        $round_up = ceil( $int );
+
+        // Return one if the value rounded was 0
+        if ( $round_up == 0 ) {
+            return 1;
+        }
+
+        return $round_up;
+
+    }
+
+    /**
+     * Merges the default database values into the provided object
+     *
+     * @param  array $data The data provided
+     * @return array
+     */
+    public function merge_defaults( $data = array() ) {
+
+        return array_merge( (array) $this->get_row_defaults(), $data );
+        
+    }
+
+    /**
+     * Returns the query we use for listing a database table row
+     *
+     * @param  string      $attribute The attribute to query by
+     * @param  mixed       $value     The attribute value
+     * @return array|false
+     */
+    public function query_row( $attribute, $value ) {
+        
+        global $wpdb;
+
+        $table_name    = $this->get_table_name();
+        $table_columns = $this->get_table_columns();
+
+        // Ensure attribute is within whitelist
+        if ( ! array_key_exists( $attribute, $table_columns ) ) {
+            return false;
+        }
+
+        // Prepare the query
+        $query = $wpdb->prepare( "SELECT * FROM $table_name WHERE `$attribute` = %s", $value );
+
+        // Get the row
+        $row = $wpdb->get_row( $query );
+
+        // Return & filter
+        return apply_filters( 'rocketgalleries_query_row', $row );
+
+    }
+
+    /**
+     * Returns the query we use for listing all of the database table rows
+     *
+     * @param  boolean $paginate    Toggles pagination
+     * @param  int     $paginate_by How many results to paginate by
+     * @param  string  $attribute   The attribute to query by
+     * @param  mixed   $value       The attribute value
+     * @return array
+     */
+    public function query_rows( $args = array() ) {
+
+        global $wpdb;
+
+        $table_name    = $this->get_table_name();
+        $table_columns = $this->get_table_columns();
+
+        // Establish default arguments
+        $defaults = array(
+            'orderby'    => 'id',
+            'order'      => 'asc',
+            'filterby'   => false,
+            'filter'     => false,
+            's'          => false,
+            'paginate'   => false,
+            'paginateby' => 20,
+            'paged'      => false,
+            'max_pages'  => 1
+        );
+
+        // Merge defaults with arguments passed to the method
+        $args = array_merge( $defaults, $args );
+
+        // Construct the beginning of the query
+        $query[] = "SELECT * FROM $table_name";
+
+        // Search, if appropriate.
+        if ( $args['s'] ) {
+            $query[] = $wpdb->prepare( "WHERE INSTR(email, %s) > 0", $args['s'] );
+        }
+
+        // Filter, if appropriate.
+        if ( $args['filterby'] && $args['filter'] ) {
+
+            // Whitelist to prevent SQL injection attacks
+            if ( array_key_exists( $args['filterby'], $table_columns ) ) {
+
+                // Add "And" if we already have a where query
+                if ( $args['s'] ) {
+                    $query[] = "AND";
+                }
+
+                $query[] = $wpdb->prepare( "WHERE `{$args['filterby']}` = %s", $args['filter'] );
+
+            }
+        }
+
+        // Order, if appropriate
+        if ( $args['orderby'] && $args['order'] ) {
+
+            // Whitelist to prevent ordering by invalid attributes
+            if ( array_key_exists( $args['orderby'], $table_columns ) ) {
+                $query[] = "ORDER BY `{$args['orderby']}` {$args['order']}";
+            }
+
+        }
+
+        // Paginate, if appropriate.
+        if ( $args['paginateby'] && $args['paginate'] ) {
+
+            // Calculate the pagination offset based on the current page
+            $offset = ( $args['paged'] ) ? ( $args['paginateby'] * ( $args['paged'] - 1 ) ) : 0;
+
+            // Add the pagination query
+            $query[] = $wpdb->prepare( "LIMIT %d OFFSET %d", $args['paginateby'], $offset );
+
+            // Set max number of pages
+            $args['max_pages'] = $this->round_up( $wpdb->get_var( "SELECT COUNT(*) FROM $table_name" ) / $args['paginateby'] );
+
+        }
+
+        // Get the rows
+        $rows = $wpdb->get_results( implode( ' ', $query ) );
+
+        // Run each row through the query row filter
+        foreach ( $rows as $key => $row ) {
+            $rows[ $key ] = apply_filters( 'rocketgalleries_query_row', $row );
+        }
+
+        // Return & filter for good measure
+        return (object) array(
+            'rows'      => $rows,
+            'max_pages' => $args['max_pages']
+        );
 
     }
 
@@ -248,7 +385,11 @@ class RG_Database {
         $row->name    = __( 'New Gallery', 'rocketgalleries' );
         $row->author  = $current_user->user_login;
         $row->images  = array();
-        $row->general = (object) array( 'randomize' => '' );
+        $row->general = (object) array( 
+            'randomize' => '',
+            'source'    => 'default',
+            'link_to'   => 'post'
+        );
 
         return apply_filters( 'rocketgalleries_get_row_defaults', $row );
 
@@ -262,19 +403,13 @@ class RG_Database {
      */
     public function get_row( $id ) {
         
-        global $wpdb;
-
-        $table_name = $this->get_table_name();
-        $query = $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $id );
-        $results = $wpdb->get_row( $query );
+        // Get the row
+        $row = $this->query_row( 'id', $id );
 
         // Bail if no row was found
-        if ( ! $results ) {
+        if ( ! $row ) {
             return false;
         }
-
-        // JSON decode and validate row
-        $row = RocketGalleries::get_instance()->validate( $this->decode_json( $results ) );
 
         // Return row JSON decoded and validated
         return apply_filters( 'rocketgalleries_get_row', $row, $id );
@@ -291,57 +426,36 @@ class RG_Database {
         // Execute the query
         $rows = $this->query_rows();
 
-        // Do some decoding & validation
-        foreach ( $rows->rows as $index => $row ) {
-            $rows->rows[ $index ] = RocketGalleries::get_instance()->validate( $this->decode_json( $row ) );
-        }
-
         // Return the queried rows
         return apply_filters( 'rocketgalleries_all_rows', $rows->rows );
 
     }
 
     /**
-     * Returns all the rows (paginated) from the database table
-     *
-     * @param  int   $paginate_by The number of results to paginate by
-     * @return array
-     */
-    public function paginate_rows( $paginate_by = 20 ) {
-
-        // Execute the query
-        $rows = $this->query_rows( true, $paginate_by );
-
-        // Do some decoding & validation
-        foreach ( $rows->rows as $index => $row ) {
-            $rows->rows[ $index ] = RocketGalleries::get_instance()->validate( $this->decode_json( $row ) );
-        }
-
-        // Return the queried rows
-        return apply_filters( 'rocketgalleries_paginate_rows', $rows, $paginate_by );
-
-    }
-
-    /**
      * Adds or updates a row, depending on whether it already exists
      *
-     * @param  int       $id The row ID
+     * @param  int       $id     The row ID
+     * @param  array     $values The updated row values
      * @return int|false
      */
-    public function add_or_update_row( $id ) {
+    public function add_or_update_row( $id, $values ) {
 
         global $wpdb;
 
         $table_name = $this->get_table_name();
-        $query = $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $id );
-        $results = $wpdb->get_row( $query );
 
-        // Save or update row
-        if ( $results !== null ){
-            return $this->update_row( $id );
+        // Attempt to get the row
+        $row = $this->get_row( $id );
+
+        /**
+         * If we've managed to successfully get the row, it exists. Update it.
+         * Otherwise, add it.
+         */
+        if ( $row ) {
+            return $this->update_row( $id, $values );
         }
         else {
-            return $this->add_row();
+            return $this->add_row( $values );
         }
 
     }
@@ -353,30 +467,17 @@ class RG_Database {
      * @param  array     $values The updated row values
      * @return int|false
      */
-    public function update_row( $id, $values = false ) {
+    public function update_row( $id, $values ) {
         
         global $wpdb;
 
-        // Allow user to specify values, otherwise get them from $_POST
-        $request = ( is_array( $values ) ) ? $values : $_POST;
+        $table_name = $this->get_table_name();
+
+        // Filter values for good measure (allows for validation through filtering, etc).
+        $values = (array) apply_filters( 'rocketgalleries_update_row', $values, $id );
 
         // Update the row
-        $table_name = $this->get_table_name();
-        return $wpdb->update(
-            $table_name,
-            array(
-                'name' => ( isset( $request['name'] ) ) ? stripslashes_deep( $request['name'] ) : '',
-                'author' => ( isset( $request['author'] ) ) ? stripslashes_deep( $request['author'] ) : '',
-                /**
-                 * The images are already JSON encoded by the Javascript, so we don't encode them unlike other object values
-                 */
-                'images' => ( isset( $request['images'] ) ) ? stripslashes_deep( $request['images'] ) : '',
-                'general' => ( isset( $request['general'] ) ) ? json_encode( stripslashes_deep( $request['general'] ) ) : ''
-            ),
-            array( 'id' => $id ),
-            array( '%s', '%s', '%s', '%s', ),
-            array( '%d' )
-        );
+        return $wpdb->update( $table_name, $values, array( 'id' => $id ) );
 
     }
 
@@ -386,32 +487,17 @@ class RG_Database {
      * @param  array     $values The row values to add
      * @return int|false
      */
-    public function add_row( $values = false ) {
+    public function add_row( $values ) {
         
         global $wpdb;
 
-        // Get defaults
-        $defaults = $this->get_row_defaults();
-
-        // Allow user to specify values, otherwise get them from $_POST
-        $request = ( is_array( $values ) ) ? $values : $_POST;
-
-        // Get the table name
         $table_name = $this->get_table_name();
 
+        // Filter values for good measure (allows for validation through filtering, etc).
+        $values = (array) apply_filters( 'rocketgalleries_add_row', $values );
+
         // Add the row
-        return $wpdb->insert( $table_name,
-            array(
-                'name' => ( isset( $request['name'] ) ) ? stripslashes_deep( $request['name'] ) : '',
-                'author' => ( isset( $request['author'] ) ) ? stripslashes_deep( $request['author'] ) : '',
-                /**
-                 * The images are already JSON encoded by the Javascript, so we don't encode them unlike other object values
-                 */
-                'images' => ( isset( $request['images'] ) ) ? stripslashes_deep( $request['images'] ) : '',
-                'general' => ( isset( $request['general'] ) ) ? json_encode( stripslashes_deep( $request['general'] ) ) : ''
-            ),
-            array( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s' )
-        );
+        return $wpdb->insert( $table_name, $values );
 
     }
 
@@ -431,15 +517,6 @@ class RG_Database {
 
         // Append 'Copy' to the row name
         $row->name = $row->name . __( ' Copy', 'rocketgalleries' );
-
-        // Escape the HTML content of each slide to prevent errors
-        if ( ! empty( $row->images ) ) {
-            foreach ( $row->images as $index => $image ) {
-                if ( ! empty( $image->content ) ) {
-                    $row->images[ $index ]->content = mysql_real_escape_string( $image->content );
-                }
-            }
-        }
 
         // Re-encode the images into JSON (when we get a row they are decoded for ease of use)
         $row->images = json_encode( $row->images );
@@ -462,7 +539,6 @@ class RG_Database {
 
         global $wpdb;
 
-        // Get the table name
         $table_name = $this->get_table_name();
 
         // Delete the row from the database
@@ -479,17 +555,16 @@ class RG_Database {
      * @return int
      */
     public function next_index() {
+
+        global $wpdb;
         
-        // Get the table name
         $table_name = $this->get_table_name();
 
-        // Query the table status, which will allow us to get the next table index
-        $query = "SHOW TABLE STATUS LIKE '$table_name'";
-        $mysql_query = mysql_query( $query );
-        $mysql_fetch_assoc = mysql_fetch_assoc( $mysql_query );
+        // Query the table status, which will allow us to get the next table index.
+        $query = $wpdb->get_results( "SHOW TABLE STATUS LIKE '$table_name'", ARRAY_A );
 
-        // Return the next table index
-        return $mysql_fetch_assoc['Auto_increment'];
+        // Return the next index
+        return $query[0]['Auto_increment'];
     
     }
 

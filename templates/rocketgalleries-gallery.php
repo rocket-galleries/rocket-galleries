@@ -7,25 +7,22 @@
      */
 ?>
 
-<div class="rocketgalleries-<?php echo esc_attr( $gallery->id ); ?>">
+<div id="<?php rocketgalleries_the_gallery_id( $gallery ); ?>" class="<?php rocketgalleries_the_gallery_class( $gallery ); ?>">
+
     <?php foreach ( $gallery->images as $image ) : ?>
-        <?php
-            // Resized image attributes, with a filter for good measure
-            $image_atts = (object) apply_filters( 'rocketgalleries_gallery_image_attributes',
-                array(
-                    'width'  => 150,
-                    'height' => 150,
-                    'crop'   => true
-                )
-            );
+
+        <div class="rocketgalleries-item">
+            <?php if ( rocketgalleries_has_image_link( $gallery, $image ) ) : ?>
+                <a class="rocketgalleries-link" rel="<?php rocketgalleries_the_gallery_id( $gallery ); ?>" href="<?php rocketgalleries_the_image_link( $gallery, $image ); ?>">
+            <?php endif; ?>
             
-            // Get the resized image
-            $resized_image = (object) RocketGalleries::get( 'resize' )->resize( $image->url, $image_atts->width, $image_atts->height, $image_atts->crop );
-        ?>
-        <figure class="rocketgalleries-item">
-            <a class="rocketgalleries-link" href="<?php echo get_attachment_link( $image->attachment_id ); ?>">
-                <img class="rocketgalleries-image" src="<?php echo esc_attr( $resized_image->url ); ?>" alt="<?php echo esc_attr( $image->url ); ?>">
-            </a>
-        </figure>
+            <img class="rocketgalleries-image" src="<?php rocketgalleries_the_image_src( $gallery, $image ); ?>" alt="<?php rocketgalleries_the_image_src( $gallery, $image ); ?>">
+            
+            <?php if ( rocketgalleries_has_image_link( $gallery, $image ) ) : ?>
+                </a>
+            <?php endif; ?>
+        </div>
+
     <?php endforeach; ?>
+
 </div>

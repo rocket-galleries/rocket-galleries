@@ -57,7 +57,7 @@ class RG_TemplateLoader {
 	 * @param string  $name
 	 * @return array
 	 */
-	protected function get_template_file_names( $slug, $name ) {
+	public function get_template_file_names( $slug, $name ) {
 
 		$templates = array();
 
@@ -84,9 +84,9 @@ class RG_TemplateLoader {
 	 * inherit from a parent theme can just overload one file. If the template is
 	 * not found in either of those, it looks in the theme-compat folder last.
 	 *
-	 * @param string|array $template_names Template file(s) to search for, in order.
-	 * @param bool         $load           If true the template file will be loaded if it is found.
-	 * @param bool         $require_once   Whether to require_once or require. Default true. Has no effect if $load is false.
+	 * @param  string|array $template_names Template file(s) to search for, in order.
+	 * @param  bool         $load           If true the template file will be loaded if it is found.
+	 * @param  bool         $require_once   Whether to require_once or require. Default true. Has no effect if $load is false.
 	 * @return string The template filename if one is located.
 	 */
 	public function locate_template( $template_names, $load = false, $require_once = true ) {
@@ -118,7 +118,7 @@ class RG_TemplateLoader {
 			load_template( $located, $require_once );
 		}
 
-		return $located;
+		return apply_filters( 'rocketgalleries_locate_template', $located );
 
 	}
 
@@ -131,7 +131,7 @@ class RG_TemplateLoader {
 	 *
 	 * @return mixed|void
 	 */
-	protected function get_template_paths() {
+	public function get_template_paths() {
 
 		$theme_directory = trailingslashit( apply_filters( 'rocketgalleries_theme_template_directory', '' ) );
 
@@ -160,7 +160,7 @@ class RG_TemplateLoader {
 	 *
 	 * @return string
 	 */
-	protected function get_templates_dir() {
+	public function get_templates_dir() {
 
 		return trailingslashit( plugin_dir_path( dirname( __FILE__ ) ) ) . 'templates';
 		

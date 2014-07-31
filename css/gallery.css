@@ -18,7 +18,7 @@
 
 .rocketgalleries-item {
 	float: left !important;
-	margin: 0 4px 4px 0; !important;
+	margin: 0 4px 4px 0 !important;
 }
 
 .rocketgalleries-link {
@@ -30,4 +30,5 @@
 
 .rocketgalleries-image {
 	width: 100% !important;
+	vertical-align: top;
 }

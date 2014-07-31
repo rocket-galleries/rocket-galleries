@@ -1,47 +1,83 @@
 <?php
 
 /**
- * Class used for displaying in the front-end.
+ * Class used for managing and displaying galleries
  *
  * @author Matthew Ruddy
  */
 class RG_Gallery {
 
     /**
-     * Class instance
+     * Constructor
      *
-     * @var RG_Database
+     * @param  array $data The gallery data
+     * @return void
      */
-    private static $instance;
+    public function __construct( $data = array() ) {
+
+        // Pre gallery filter
+        $data = (object) apply_filters( 'rocketgalleries_pre_gallery', $data );
+
+        // Set the data that's be provided
+        $this->set( $data );
+
+    }
 
     /**
-     * Getter method for retrieving the class instance
+     * Gets a gallery by the ID provided
      *
+     * @param  int $id The gallery ID
      * @return RG_Gallery
      */
-    public static function get_instance() {
+    public function get( $id ) {
 
-        if ( ! self::$instance instanceof self ) {
-            self::$instance = new self;
+        // Attempt to get the gallery data
+        $data = RocketGalleries::get_instance()->database->get_row( $id );
+
+        // Bail if we failed to get a gallery
+        if ( ! $data ) {
+            return $this;
         }
 
-        return self::$instance;
+        // Set the gallery variables
+        $this->set( $data );
+
+        return $this;
+
+    }
+
+    /**
+     * Sets the gallery data
+     *
+     * @param  array $data The gallery data
+     * @return RG_Gallery
+     */
+    public function set( $data = array() ) {
+
+        // Set the variables
+        foreach ( $data as $key => $value ) {
+            $this->$key = $value;
+        }
+
+        return $this;
 
     }
 
     /**
      * Displays a gallery based on the data provided
      *
-     * @param  object $gallery The gallery data
-     * @return string
+     * @return void
      */
-    public function display( $gallery ) {
+    public function display() {
+
+        // For clarity in our templates, let's make $this equal to $gallery
+        $gallery = &$this;
 
         // Before action
         do_action( 'rocketgalleries_before_display_gallery', $gallery );
 
         // Get our gallery template
-        $template = RocketGalleries::get( 'template_loader' )->get_template_part( 'rocketgalleries', 'gallery', false );
+        $template = RocketGalleries::get_instance()->template_loader->get_template_part( 'rocketgalleries', 'gallery', false );
 
         // Load our template (requiring it this way includes are variables within this function)
         require $template;

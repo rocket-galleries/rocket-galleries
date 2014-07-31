@@ -319,6 +319,41 @@ p.search-box {
     display: none;
 }
 
+/** ===== Extensions ===== */
+.extensions .extension {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 300px;
+    margin: 10px 20px 10px 0;
+    padding: 10px;
+    float: left;
+    border: 1px solid #ccc;
+}
+.extensions .extension a {
+    text-decoration: none;
+}
+.extensions .extension h3 {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    background-color: #fff;
+    background-repeat: no-repeat;
+    background-position: top left;
+    height: 110px;
+    margin: 0;
+    padding: 20px 10px 0 120px;
+    border-bottom: 1px solid #ccc;
+}
+.extensions .extension p,
+.extensions .extension h4 {
+    margin: 0;
+    padding: 10px;
+}
+.extensions .extension h4 {
+    font-size: 16px;
+}
+
 /** ===== Media Queries ===== */
 @media screen and (max-width: 782px) {
 

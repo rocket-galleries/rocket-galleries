@@ -3,7 +3,7 @@
 /*
     Plugin Name: Rocket Galleries
     Plugin URI: http://rocketgalleries.com/
-    Version: 0.1.5
+    Version: 0.2
     Author: Matthew Ruddy
     Author URI: http://matthewruddy.com/
     Description: Rocket Galleries is the gallery manager WordPress never had. Easily create and manage galleries from one intuitive panel within WordPress. Simple, easy to use, and lightweight.
@@ -26,25 +26,9 @@
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-// Load all of the necessary class files for the plugin
-spl_autoload_register( 'RocketGalleries::autoload' );
-
 // Let's go!
 if ( class_exists( 'RocketGalleries' ) ) {
     RocketGalleries::get_instance();
-}
-
-/**
- * Simple helper function for displaying a gallery.
- *
- * @author Matthew Ruddy
- * @param  int  $id The ID of the gallery you wish to display
- * @return void
- */
-if ( ! function_exists( 'rocketgalleries' ) ) {
-    function rocketgalleries( $id ) {
-        echo RocketGalleries::get_instance()->do_shortcode( array( 'id' => $id ) );
-    }
 }
 
 /**
@@ -73,7 +57,7 @@ class RocketGalleries {
      *
      * @var string
      */
-    public static $version = '0.1.5';
+    public static $version = '0.2';
 
     /**
      * Our array of Rocket Galleries admin pages. These are used to conditionally load scripts.
@@ -95,25 +79,6 @@ class RocketGalleries {
      * @var boolean
      */
     private $is_plugin_page = false;
-    
-    /**
-     * PSR-0 compliant autoloader to load classes as needed.
-     *
-     * @return void
-     */
-    public static function autoload( $classname ) {
-    
-        if ( 'RG' !== substr( $classname, 0, 2 ) ) {
-            return;
-        }
-            
-        $filename = dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . str_replace( 'RG_', '', $classname ) . '.php';
-
-        if ( file_exists( $filename ) ) {
-            require $filename;
-        }
-    
-    }
 
     /**
      * Getter method for retrieving the class instance.
@@ -123,7 +88,24 @@ class RocketGalleries {
     public static function get_instance() {
     
         if ( ! self::$instance instanceof self ) {
-            self::$instance = new self;
+
+            // Load helper functions
+            require plugin_dir_path( __FILE__ ) . '/includes/helpers.php';
+
+            // Load dependencies
+            require plugin_dir_path( __FILE__ ) . '/includes/Database.php';
+            require plugin_dir_path( __FILE__ ) . '/includes/Gallery.php';
+            require plugin_dir_path( __FILE__ ) . '/includes/Resize.php';
+            require plugin_dir_path( __FILE__ ) . '/includes/TemplateLoader.php';
+            require plugin_dir_path( __FILE__ ) . '/includes/Update.php';
+            
+            // Initiate components
+            self::$instance                  = new self;
+            self::$instance->database        = RG_Database::get_instance();
+            self::$instance->resize          = RG_Resize::get_instance();
+            self::$instance->template_loader = RG_TemplateLoader::get_instance();
+            self::$instance->update          = RG_Update::get_instance();
+
         }
 
         return self::$instance;
@@ -185,27 +167,20 @@ class RocketGalleries {
         add_action( 'rocketgalleries_edit_settings_actions', array( $this, 'do_settings_actions' ) );
         add_action( 'rocketgalleries_theme_has_template', array( $this, 'queue_has_template_class' ) );
 
+        /**
+         * Hook a filter that'll validate our options before they are returned.
+         * Handy for ensuring booleans are booleans, integers are integers, etc.
+         */
+        add_filter( 'option_managelicensing_settings', array( $this, 'validate' ) );
+        add_filter( 'pre_update_option_managelicensing_settings', array( $this, 'validate' ) );
+        add_filter( 'rocketgalleries_query_row', array( $this, 'validate' ) );
+        add_filter( 'rocketgalleries_query_rows', array( $this, 'validate' ) );
+        add_filter( 'rocketgalleries_add_row', array( $this, 'validate' ) );
+        add_filter( 'rocketgalleries_update_row', array( $this, 'validate' ) );
+
         // Initialization hook for adding external functionality
         do_action_ref_array( 'rocketgalleries', array( $this ) );
 
-    }
-
-    /**
-     * Getter method for getting our library classes
-     *
-     * @param  string $class The library class to get
-     * @return mixed
-     */
-    public static function get( $class ) {
-
-        // Generate the class name, applying a filter to allow users to extend and hook their own classes instead
-        $classname = apply_filters( "rocketgalleries_get_{$class}", 'RG_'. str_replace( ' ', '', ucwords( str_replace( '_', ' ', $class ) ) ) );
-
-        // Get the class instance, if it exists
-        if ( class_exists( $classname ) ) {
-            return call_user_func( array( $classname, 'get_instance' ) );
-        }
-        
     }
     
     /**
@@ -314,7 +289,7 @@ class RocketGalleries {
         }
 
         // Create our database table
-        $this->get( 'database' )->create_table();
+        $this->database->create_table();
 
         // Add "wp_options" table options
         add_option( 'rocketgalleries_version', self::$version );
@@ -341,11 +316,10 @@ class RocketGalleries {
     public function uninstall() {
 
         // Delete our database table
-        $this->get( 'database' )->delete_table();
+        $this->database->delete_table();
 
         // Delete "wp_options" table options
         delete_option( 'rocketgalleries_version' );
-        delete_option( 'rocketgalleries_gallery' );
         delete_option( 'rocketgalleries_settings' );
         delete_option( 'rocketgalleries_disable_welcome_panel' );
 
@@ -406,35 +380,44 @@ class RocketGalleries {
     }
 
     /**
-     * Imports all WordPress galleries into the plugin
+     * Returns the "Link To" options available
      *
-     * @return void
+     * @return array
      */
-    public function import_wordpress_galleries() {
+    public function get_link_options() {
 
-        global $wp_query;
+        return apply_filters( 'rocketgalleries_link_to_options', array(
+            'post' => __( 'Attachment Page', 'rocketgalleries' ),
+            'file' => __( 'Media File', 'rocketgalleries' ),
+            'none' => __( 'None', 'rocketgalleries' )
+        ) );
 
-        // Query the posts
-        $posts = $wp_query->posts;
+    }
 
-        // Get the shortcode regex pattern
-        $pattern = get_shortcode_regex();
+    /**
+     * Returns the "Image Source" options available
+     *
+     * @return array
+     */
+    public function get_source_options() {
 
-        // Loop through each post and find matches
-        foreach ( $posts as $post ) {
+        return apply_filters( 'rocketgalleries_image_source_options', array(
+            'default' => __( 'Default', 'rocketgalleries' )
+        ) );
 
-            // Match the shortcodes
-            if ( preg_match_all( '/'. $pattern .'/s', $post->post_content, $matches )&& array_key_exists( 3, $matches ) && in_array( 'gallery', $matches[2] ) ) {
-            
-                // Extract the ID's from the matches
-                $ids = $matches[3][0];
+    }
 
-                //
+    /**
+     * Returns the tabs available for the various settings pages
+     *
+     * @return array
+     */
+    public function get_settings_page_tabs() {
 
-            }
+        return apply_filters( 'rocketgalleries_settings_page_tabs', array(
+            'general' => __( 'General', 'rocketgalleries' )
+        ) );
 
-        }
-    
     }
 
     /**
@@ -448,7 +431,8 @@ class RocketGalleries {
         $capabilities = array(
             'rocketgalleries_add_gallery',
             'rocketgalleries_edit_galleries',
-            'rocketgalleries_edit_settings'
+            'rocketgalleries_edit_settings',
+            'rocketgalleries_extensions'
         );
 
         // Allow user to filter in their own capabilities
@@ -533,7 +517,8 @@ class RocketGalleries {
         $pages = apply_filters( 'rocketgalleries_menus', array(
             'rocketgalleries_add_gallery',
             'rocketgalleries_edit_galleries',
-            'rocketgalleries_edit_settings'
+            'rocketgalleries_edit_settings',
+            'rocketgalleries_extensions'
         ) );
 
         // Default menu positioning
@@ -604,6 +589,14 @@ class RocketGalleries {
             'rocketgalleries_edit_settings',
             'rocketgalleries_edit_settings',
             array( $this, 'display_settings_view' )
+        );
+        $this->whitelist[] = add_submenu_page(
+            'rocketgalleries_edit_galleries',
+            __( 'Extensions', 'rocketgalleries' ),
+            __( 'Extensions', 'rocketgalleries' ),
+            'rocketgalleries_extensions',
+            'rocketgalleries_extensions',
+            array( $this, 'display_extensions_view' )
         );
 
         // Add the menu separators if menus have been relocated (they are by default). Quotations marks ensure these are strings.
@@ -678,7 +671,7 @@ class RocketGalleries {
             return;
 
         // Get all of the slideshows
-        $galleries = $this->get( 'database' )->all_rows();
+        $galleries = $this->database->all_rows();
 
         // Content HTML
         ?>
@@ -762,7 +755,7 @@ class RocketGalleries {
     public function check_theme_for_templates() {
 
         // Get the current template path. We'll use this to check if the template directory is the same as the theme directory.
-        $template = $this->get( 'template_loader' )->get_template_part( 'rocketgalleries', 'gallery', false );
+        $template = $this->template_loader->get_template_part( 'rocketgalleries', 'gallery', false );
 
         // Get the template directory
         $template_dirname = pathinfo( $template, PATHINFO_DIRNAME );
@@ -798,6 +791,7 @@ class RocketGalleries {
     /**
      * Adds a class to the admin body classes the tells us that the theme being used has a custom front-end template for our plugin.
      *
+     * @param  string $class The string of class name we're appending too
      * @return array
      */
     public function admin_has_template_class( $class ) {
@@ -814,18 +808,19 @@ class RocketGalleries {
     /**
      * Queues an admin message to be displayed
      *
-     * @param string $text The message text string
-     * @param string $type The type of message queued; error, etc.
+     * @param  string $text The message text string
+     * @param  string $type The type of message queued; error, etc.
      * @return void
      */
     public function queue_message( $text, $type ) {
 
+        // Bail if we aren't on a Rocket Galleries page
         if ( ! $this->is_plugin_page ) {
             return;
         }
 
         // Parse the message HTML
-        $message = "<div class='message $type'><p>$text</p></div>";
+        $message = "<div class='message $type'><p>". addslashes( $text ) ."</p></div>";
 
         // Queue the message via actions
         add_action( 'admin_notices', create_function( '', 'echo "'. $message .'";' ) );
@@ -912,8 +907,8 @@ class RocketGalleries {
     /**
      * Does validation, ensuring integer are integers and booleans are booleans, etc.
      *
-     * @param  array $values The values to validate
-     * @return array
+     * @param  mixed $values The values to validate
+     * @return mixed
      */
     public function validate( $values ) {
 
@@ -926,18 +921,28 @@ class RocketGalleries {
         }
 
         // Get settings and do some validation
-        foreach ( $values as $key => $value ) {
+        if ( is_array( $values ) ) {
+            foreach ( $values as $key => $value ) {
 
-            // Validators
-            if ( is_numeric( $value ) )
-                $values[ $key ] = filter_var( $value, FILTER_VALIDATE_INT );
-            elseif ( $value === 'true' || $value === 'false' )
-                $values[ $key ] = filter_var( $value, FILTER_VALIDATE_BOOLEAN );
+                // Bail if is null
+                if ( is_null( $value ) ) {
+                    continue;
+                }
 
-            // Recurse if necessary
-            if ( is_object( $value ) || is_array( $value ) )
-                $values[ $key ] = $this->validate( $value );
+                // Validators
+                if ( is_numeric( $value ) && floor( $value ) != $value ) {
+                    $values[ $key ] = filter_var( $value, FILTER_VALIDATE_INT );
+                }
+                elseif ( $value === 'true' || $value === 'false' ) {
+                    $values[ $key ] = filter_var( $value, FILTER_VALIDATE_BOOLEAN );
+                }
 
+                // Recurse if necessary
+                if ( is_object( $value ) || is_array( $value ) ) {
+                    $values[ $key ] = $this->validate( $value );
+                }
+
+            }
         }
 
         // Convert back to an object
@@ -956,7 +961,7 @@ class RocketGalleries {
      */
     public function do_actions() {
 
-        // Bail if we aren't on a RocketGalleries page
+        // Bail if we aren't on a Rocket Galleries page
         if ( ! $this->is_plugin_page ) {
             return;
         }
@@ -988,8 +993,16 @@ class RocketGalleries {
                 exit();
             }
 
+            // Get the gallery settings
+            $gallery = array(
+                'name'    => $_POST['name'],
+                'author'  => $_POST['author'],
+                'images'  => $_POST['images'],
+                'general' => $_POST['general']
+            );
+
             // Saves or add the row, returning the response
-            $response = $this->get( 'database' )->add_or_update_row( $_GET['edit'] );
+            $response = $this->database->add_or_update_row( $_GET['edit'], $gallery );
 
             // Check for false response explicity to prevent incorrect error reports. MySQL returns 0 if save is successful but no rows were affected.
             if ( $response === false ) {
@@ -1044,7 +1057,7 @@ class RocketGalleries {
 
                 // Duplicate gallery
                 foreach ( $_GET['id'] as $id ) {
-                    $response = $this->get( 'database' )->duplicate_row( $id );
+                    $response = $this->database->duplicate_row( $id );
                 }
 
                 // Check for success or failure
@@ -1062,7 +1075,7 @@ class RocketGalleries {
 
                 // Delete galleries
                 foreach ( $_GET['id'] as $id ) {
-                    $response = $this->get( 'database' )->delete_row( $id );
+                    $response = $this->database->delete_row( $id );
                 }
 
                 // Check for success or failure
@@ -1096,7 +1109,7 @@ class RocketGalleries {
                 }
 
                 // Duplicate gallery
-                $response = $this->get( 'database' )->duplicate_row( $_GET['id'] );
+                $response = $this->database->duplicate_row( $_GET['id'] );
 
                 // Check for success or failure
                 if ( $response === false ) {
@@ -1118,7 +1131,7 @@ class RocketGalleries {
                 }
 
                 // Delete gallery
-                $response = $this->get( 'database' )->delete_row( $_GET['id'] );
+                $response = $this->database->delete_row( $_GET['id'] );
 
                 // Check for success or failure
                 if ( $response === false ) {
@@ -1143,6 +1156,11 @@ class RocketGalleries {
      * @return string
      */
     public function do_settings_actions( $page ) {
+
+        // Bail if not on our settings tab
+        if ( isset( $_GET['tab'] ) && $_GET['tab'] !== 'general' ) {
+            return false;
+        }
 
         // Reset plugin
         if ( isset( $_POST['reset'] ) ) {
@@ -1171,11 +1189,8 @@ class RocketGalleries {
                 exit();
             }
 
-            // Get settings and do some validation
-            $settings = $this->validate( $_POST['settings'] );
-
             // Update database option and get the response
-            update_option( 'rocketgalleries_settings', stripslashes_deep( $settings ) );
+            update_option( 'rocketgalleries_settings', $_POST['settings'] );
 
             // Show update message
             return $this->queue_message( __( 'Settings have been <strong>saved</strong> successfully.', 'rocketgalleries' ), 'updated' );
@@ -1193,24 +1208,22 @@ class RocketGalleries {
     public function do_shortcode( $atts ) {
 
         // Extract shortcode attributes
-        extract(
-            shortcode_atts(
-                array( 'id' => false ),
-                $atts
-            )
-        );
+        extract( shortcode_atts(
+            array( 'id' => false ),
+            $atts
+        ) );
 
-        // Display error message if no ID has been entered
-        if ( ! $id ) {
-            return __( 'Looks like you\'ve forgotten to add a gallery ID to this shortcode. Oh dear!', 'rocketgalleries' );
+        // Initiate a new gallery
+        $gallery = new RG_Gallery();
+
+        // Attempt to get the gallery if an ID has been provided
+        if ( isset( $id ) ) {
+            $gallery = $gallery->get( $id );
         }
 
-        // Get the gallery
-        $gallery = $this->get( 'database' )->get_row( $id );
-
-        // Bail if no valid gallery was found
-        if ( ! isset( $gallery->id ) ) {
-            return sprintf( '<p style="background-color: #ffebe8; border: 1px solid #c00; border-radius: 4px; padding: 8px !important;">' . __( 'The gallery specified (ID #%d) does not appear to exist.', 'rocketgalleries' ) . '</p>', $id );
+        // If a string has been returned, display the error
+        if ( ! is_object( $gallery ) ) {
+            return $gallery;
         }
 
         /**
@@ -1219,7 +1232,7 @@ class RocketGalleries {
          * to always be printed at the top of the post/page unlesss the HTML was returned.
          */
         ob_start();
-        $this->get( 'gallery' )->display( $gallery );
+        $gallery->display();
         return ob_get_clean();
 
     }
@@ -1243,7 +1256,7 @@ class RocketGalleries {
     /**
      * Register all admin scripts
      *
-     * @since void
+     * @return void
      */
     public function register_all_scripts() {
 
@@ -1258,7 +1271,7 @@ class RocketGalleries {
     /**
      * Queues gallery CSS and JS for loading in either the header or footer, depending on the plugin settings.
      *
-     * @since void
+     * @return void
      */
     public function enqueue_gallery_assets() {
 
@@ -1289,8 +1302,8 @@ class RocketGalleries {
     /**
      * Loads admin stylesheets
      *
-     * @param string $hook The page hook, used to check the current page against our whitelist.
-     * @since void
+     * @param  string $hook The page hook, used to check the current page against our whitelist.
+     * @return void
      */
     public function enqueue_admin_styles( $hook ) {
 
@@ -1304,6 +1317,7 @@ class RocketGalleries {
         wp_enqueue_style( 'rg-admin' );
 
         // Allow developers to hook their own styles into our pages
+        do_action( "{$_GET['page']}_enqueue_styles" );
         do_action( 'rocketgalleries_enqueue_admin_styles' );
 
     }
@@ -1311,12 +1325,12 @@ class RocketGalleries {
     /**
      * Loads admin javascript files
      *
-     * @param string $hook The page hook, used to check the current page against our whitelist.
-     * @since void
+     * @param  string $hook The page hook, used to check the current page against our whitelist.
+     * @return void
      */
     public function enqueue_admin_scripts( $hook ) {
 
-        // Bail if not one of our plugin pages
+        // Bail if not a Rocket Galleries page
         if ( ! in_array( $hook, $this->whitelist ) ) {
             return;
         }
@@ -1329,6 +1343,7 @@ class RocketGalleries {
         wp_enqueue_script( 'rg-admin' );
 
         // Allow developers to hook their own scripts into our pages
+        do_action( "{$_GET['page']}_enqueue_scripts" );
         do_action( 'rocketgalleries_enqueue_admin_scripts' );
 
     }
@@ -1336,7 +1351,7 @@ class RocketGalleries {
     /**
      * Translations localized via Javascript
      *
-     * @since array
+     * @return array
      */
     public function localizations() {
 
@@ -1358,11 +1373,11 @@ class RocketGalleries {
     /**
      * Prints the backbone templates used in the admin area
      *
-     * @since void
+     * @return void
      */
     public function print_backbone_templates() {
 
-        // Bail if not a RocketGalleries page
+        // Bail if we aren't on a Rocket Galleries page
         if ( ! $this->is_plugin_page ) {
             return;
         }
@@ -1382,7 +1397,7 @@ class RocketGalleries {
     /**
      * Displays the appropriate editor view (either the editor itself or a list view).
      *
-     * @since void
+     * @return void
      */
     public function display_editor_view() {
 
@@ -1393,7 +1408,12 @@ class RocketGalleries {
         if ( isset( $_GET['edit'] ) ) {
 
             // Get the gallery ID
-            $gallery = $this->get( 'database' )->get_row( $_GET['edit'] );
+            $gallery = new RG_Gallery();
+            $gallery = $gallery->get( $_GET['edit'] );
+
+            // Get the other miscellaneous options
+            $link_to       = $this->get_link_options();
+            $image_sources = $this->get_source_options();
 
             // Display the editor
             require dirname( self::get_file() ) . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'edit-gallery.php';
@@ -1404,14 +1424,15 @@ class RocketGalleries {
             // Get the number of results to paginate by, with a handy filter to make it easy to change.
             $paginate_by = apply_filters( 'rocketgalleries_list_galleries_paginate_by', 20 );
 
-            // Get the paginated galleries
-            $paginated_results = $this->get( 'database' )->paginate_rows( $paginate_by );
+            // Merge with arguments
+            $args = array_merge( $_GET, array( 'paginate' => true, 'paginateby' => $paginate_by ) );
 
-            // Get the maximum number of pages
-            $max_pages = $paginated_results->max_pages;
+            // Get the paginated licenses
+            $results = $this->database->query_rows( $args );
 
-            // Get the galleries
-            $galleries = $paginated_results->rows;
+            // Extract our needed data
+            $galleries = $results->rows;
+            $max_pages = $results->max_pages;
 
             // Display the list
             require dirname( self::get_file() ) . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'list-galleries.php';
@@ -1424,7 +1445,7 @@ class RocketGalleries {
      * Display the "Add New" view. Here we just display the editor view,except with default gallery values.
      * This is far more straightforward than having two separate views with all of the same HTML (less duplication for the win).
      *
-     * @since void
+     * @return void
      */
     public function display_add_new_view() {
 
@@ -1435,7 +1456,11 @@ class RocketGalleries {
         $page = 'rocketgalleries_edit_galleries';
 
         // Get the default gallery values
-        $gallery = $this->get( 'database' )->get_row_defaults();
+        $gallery = new RG_Gallery();
+
+        // Get the other miscellaneous options
+        $link_to       = $this->get_link_options();
+        $image_sources = $this->get_source_options();
 
         // Display the editor view
         require dirname( self::get_file() ) . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'edit-gallery.php';
@@ -1445,18 +1470,39 @@ class RocketGalleries {
     /**
      * Display the "Settings" view.
      *
-     * @since void
+     * @return void
      */
     public function display_settings_view() {
 
         // Get the page
         $page = $_GET['page'];
 
+        // Get the tab
+        $tab = ( isset( $_GET['tab'] ) ) ? $_GET['tab'] : 'general';
+
+        // Get the available tabs
+        $tabs = $this->get_settings_page_tabs();
+
         // Get the settings
         $settings = get_option( 'rocketgalleries_settings' );
 
         // Display the settings
         require dirname( self::get_file() ) . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'edit-settings.php';
+
+    }
+    
+    /**
+     * Display the "Extensions" view.
+     *
+     * @return void
+     */
+    public function display_extensions_view() {
+
+        // Get the page
+        $page = $_GET['page'];
+
+        // Display the settings
+        require dirname( self::get_file() ) . DIRECTORY_SEPARATOR . 'admin' . DIRECTORY_SEPARATOR . 'list-extensions.php';
 
     }
 

@@ -1,30 +1,19 @@
 <?php
-
-/*
-    Plugin Name: Rocket Galleries
-    Plugin URI: http://rocketgalleries.com/
-    Version: 0.2.0.1
-    Author: Matthew Ruddy
-    Author URI: http://matthewruddy.com/
-    Description: Rocket Galleries is the gallery manager WordPress never had. Easily create and manage galleries from one intuitive panel within WordPress. Simple, easy to use, and lightweight.
-    License: GNU General Public License v2.0 or later
-    License URI: http://www.opensource.org/licenses/gpl-license.php
-
-    Copyright 2014 Matthew Ruddy
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License, version 2, as
-    published by the Free Software Foundation.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
+/**
+ * Plugin Name: Rocket Galleries
+ * Plugin URI: http://rocketgalleries.com/
+ * Description: Rocket Galleries is the gallery manager WordPress never had. Easily create and manage galleries from one intuitive panel within WordPress. Simple, easy to use, and lightweight.
+ * Version: 0.2.0.2
+ * Author: Matthew Ruddy
+ * Author URI: http://matthewruddy.com
+ * License: GPL2
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Domain Path: /languages
+ * Text Domain: rocketgalleries
+ * 
+ * @package Rocket Galleries
+ * @author Matthew Ruddy
+ */
 
 // Let's go!
 if ( class_exists( 'RocketGalleries' ) ) {
@@ -57,7 +46,7 @@ class RocketGalleries {
      *
      * @var string
      */
-    public static $version = '0.2.0.1';
+    public static $version = '0.2.0.2';
 
     /**
      * Our array of Rocket Galleries admin pages. These are used to conditionally load scripts.
